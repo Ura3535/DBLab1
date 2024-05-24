@@ -13,14 +13,9 @@ static std::ostream& operator<<(std::ostream& out, Model::Region region) {
 }
 
 static void getline(char* str, std::streamsize count) {
-
-	std::cin.getline(str, count);
-	if (std::cin.gcount() >= count - 1) {
-		str[count - 1] = '\0';
-	}
-	else {
-		std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-	}
+	std::string tmp;
+	std::cin >> tmp;
+	strcpy_s(str, count, tmp.c_str());
 }
 
 App::Command App::ToCommand(const std::string& strCommand)
@@ -69,22 +64,27 @@ void App::Run()
 		switch (comm)
 		{
 		case GET_M:
+			std::cout << "Region Id: ";
 			std::cin >> region.Id;
 			std::cout << rep->Regions.Get(region.Id) << '\n';
 			break;
 
 		case DEL_M:
+			std::cout << "Region Id: ";
 			std::cin >> region.Id;
 			rep->Regions.Delete(region.Id);
 			break;
 
 		case UPD_M:
+			std::cout << "Region Id: ";
 			std::cin >> region.Id;
+			std::cout << "Region Name: ";
 			getline(region.RegionName, 50);
 			rep->Regions.Update(region);
 			break;
 
 		case INS_M:
+			std::cout << "Region Name: ";
 			getline(region.RegionName, 50);
 			rep->Regions.Insert(region);
 			break;
@@ -99,26 +99,35 @@ void App::Run()
 			break;
 
 		case GET_S:
+			std::cout << "Autor Id: ";
 			std::cin >> autor.Id;
 			std::cout << rep->Autors.Get(autor.Id) << '\n';
 			break;
 
 		case DEL_S:
+			std::cout << "Autor Id: ";
 			std::cin >> autor.Id;
 			rep->Autors.Delete(autor.Id);
 			break;
 
 		case UPD_S:
+			std::cout << "Autor Id: ";
 			std::cin >> autor.Id;
+			std::cout << "RegionId: ";
 			std::cin >> autor.RegionId;
+			std::cout << "AutorName: ";
 			getline(autor.AutorName, 50);
+			std::cout << "Pseudonym: ";
 			getline(autor.Pseudonym, 50);
 			rep->Autors.Insert(autor);
 			break;
 
 		case INS_S:
+			std::cout << "RegionId: ";
 			std::cin >> autor.RegionId;
+			std::cout << "AutorName: ";
 			getline(autor.AutorName, 50);
+			std::cout << "Pseudonym: ";
 			getline(autor.Pseudonym, 50);
 			rep->Autors.Insert(autor);
 			break;
@@ -141,15 +150,15 @@ void App::Run()
 
 			std::cout << "\t\"get-m\" - оримати Region за його Id\n";
 			std::cout << "\t\"del-m\" - видалити Region за його Id\n";
-			std::cout << "\t\"upd-m\" - оновити Region за його Id\n";
-			std::cout << "\t\"ins-m\" - додати новий Region\n";
+			std::cout << "\t\"update-m\" - оновити Region за його Id\n";
+			std::cout << "\t\"insert-m\" - додати новий Region\n";
 			std::cout << "\t\"calc-m\" - кількість Region-ів\n";
 			std::cout << "\t\"ut-m\" - отримати всі Region-и\n";
 
 			std::cout << "\t\"get-s\" - оримати Autor за його Id\n";
 			std::cout << "\t\"del-s\" - видалити Autor за його Id\n";
-			std::cout << "\t\"upd-s\" - оновити Autor за його Id\n";
-			std::cout << "\t\"ins-s\" - додати нового Autor-а\n";
+			std::cout << "\t\"update-s\" - оновити Autor за його Id\n";
+			std::cout << "\t\"insert-s\" - додати нового Autor-а\n";
 			std::cout << "\t\"calc-s\" - кількість Autor-ів\n";
 			std::cout << "\t\"ut-s\" - отримати всіх Autor-ів\n";
 			break;
