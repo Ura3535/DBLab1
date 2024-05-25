@@ -34,6 +34,7 @@ App::Command App::ToCommand(const std::string& strCommand)
 	if (s == "insert-s") return INS_S;
 	if (s == "calc-m") return CALC_M;
 	if (s == "calc-s") return CALC_S;
+	if (s == "calc-s2") return CALC_S2;
 	if (s == "ut-m") return UT_M;
 	if (s == "ut-s") return UT_S;
 	if (s == "help") return HELP;
@@ -141,6 +142,13 @@ void App::Run()
 				std::cout << x << '\n';
 			break;
 
+		case CALC_S2:
+			std::cout << "RegionId: ";
+			std::cin >> autor.RegionId;
+			for (const auto& x : rep->Autors.GetByRegionId(autor.RegionId))
+				std::cout << x << '\n';
+			break;
+
 		case INVALID:
 			std::cout << "Неправильна команда\n";
 			break;
@@ -160,6 +168,7 @@ void App::Run()
 			std::cout << "\t\"update-s\" - оновити Autor за його Id\n";
 			std::cout << "\t\"insert-s\" - додати нового Autor-а\n";
 			std::cout << "\t\"calc-s\" - кількість Autor-ів\n";
+			std::cout << "\t\"calc-s2\" - кількість Autor-ів з заданим RegionId\n";
 			std::cout << "\t\"ut-s\" - отримати всіх Autor-ів\n";
 			break;
 

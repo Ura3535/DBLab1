@@ -1,7 +1,7 @@
 #include "Repository.h"
 
-using namespace Model;
 using namespace Repository;
+using namespace Model;
 
 void RegionRepository::CreateTable(const fs::path& FileFL)
 {
