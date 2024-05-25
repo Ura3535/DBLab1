@@ -43,6 +43,8 @@ namespace Repository
 		void Delete(long Id);
 		void Update(const Model::Autor& data);
 		void Insert(const Model::Autor& data);
+		size_t Calc();
+		size_t Calc(long RegionId);
 		std::vector<Model::Autor> GetAll();
 		std::vector<Model::Autor> GetByRegionId(long RegionId);
 	};
@@ -66,6 +68,7 @@ namespace Repository
 		void Delete(long Id);
 		void Update(const Model::Region& data);
 		void Insert(const Model::Region& data);
+		size_t Calc();
 		std::vector<Model::Region> GetAll();
 	};
 

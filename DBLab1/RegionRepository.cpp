@@ -127,11 +127,15 @@ void RegionRepository::Insert(const Region& data)
 	file.write(reinterpret_cast<const char*>(&auto_inc_key), sizeof(auto_inc_key));
 }
 
+size_t Repository::RegionRepository::Calc()
+{
+	return ind.size();
+}
+
 std::vector<Region> RegionRepository::GetAll()
 {
 	std::vector<Region> vector;
 	file.seekg(ServiceData::service_data_size, std::ios::beg);
-	int i = 0;
 	for (const auto& x : ind) {
 		vector.push_back(Get(x.first));
 	}

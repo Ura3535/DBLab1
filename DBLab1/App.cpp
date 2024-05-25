@@ -93,7 +93,7 @@ void App::Run()
 				break;
 
 			case CALC_M:
-				std::cout << rep->Regions.GetAll().size() << '\n';
+				std::cout << rep->Regions.Calc() << '\n';
 				break;
 
 			case UT_M:
@@ -136,7 +136,7 @@ void App::Run()
 				break;
 
 			case CALC_S:
-				std::cout << rep->Autors.GetAll().size() << '\n';
+				std::cout << rep->Autors.Calc() << '\n';
 				break;
 
 			case UT_S:
@@ -147,8 +147,7 @@ void App::Run()
 			case CALC_S2:
 				std::cout << "RegionId: ";
 				std::cin >> autor.RegionId;
-				for (const auto& x : rep->Autors.GetByRegionId(autor.RegionId))
-					std::cout << x << '\n';
+				std::cout << rep->Autors.Calc(autor.RegionId) << '\n';
 				break;
 
 			case INVALID:
@@ -172,6 +171,9 @@ void App::Run()
 				std::cout << "\t\"calc-s\" - кількість Autor-ів\n";
 				std::cout << "\t\"calc-s2\" - кількість Autor-ів з заданим RegionId\n";
 				std::cout << "\t\"ut-s\" - отримати всіх Autor-ів\n";
+
+				std::cout << "\t\"help\" - всі команди\n";
+				std::cout << "\t\"exit\" - завершити виконання\n";
 				break;
 
 			case EXIT:

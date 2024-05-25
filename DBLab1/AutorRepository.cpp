@@ -1,7 +1,7 @@
 #include "Repository.h"
 
-using namespace Model;
 using namespace Repository;
+using namespace Model;
 
 void AutorRepository::CreateTable(const fs::path& FileFL)
 {
@@ -127,11 +127,30 @@ void AutorRepository::Insert(const Autor& data)
 	file.write(reinterpret_cast<const char*>(&auto_inc_key), sizeof(auto_inc_key));
 }
 
+size_t AutorRepository::Calc()
+{
+	return ind.size();
+}
+
+size_t AutorRepository::Calc(long RegionId)
+{
+	std::vector<Autor> vector;
+	Autor tmp;
+	file.seekg(ServiceData::service_data_size, std::ios::beg);
+	size_t size = 0;
+	for (const auto& x : ind) {
+		tmp = Get(x.first);
+		if (tmp.RegionId == RegionId)
+			++size;
+	}
+
+	return size;
+}
+
 std::vector<Autor> AutorRepository::GetAll()
 {
 	std::vector<Autor> vector;
 	file.seekg(ServiceData::service_data_size, std::ios::beg);
-	int i = 0;
 	for (const auto& x : ind) {
 		vector.push_back(Get(x.first));
 	}
@@ -144,7 +163,6 @@ std::vector<Autor> AutorRepository::GetByRegionId(long RegionId)
 	std::vector<Autor> vector;
 	Autor tmp;
 	file.seekg(ServiceData::service_data_size, std::ios::beg);
-	int i = 0;
 	for (const auto& x : ind) {
 		tmp = Get(x.first);
 		if (tmp.RegionId == RegionId)
