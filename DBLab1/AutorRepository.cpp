@@ -72,6 +72,8 @@ AutorRepository::~AutorRepository()
 
 Autor AutorRepository::Get(long Id)
 {
+	if (!ind.contains(Id))
+		throw std::exception("Немає такого Autor Id");
 	Autor obj;
 	file.seekg(ServiceData::service_data_size + ind[Id] * Autor::size, std::ios::beg);
 	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
@@ -84,6 +86,8 @@ Autor AutorRepository::Get(long Id)
 
 void AutorRepository::Delete(long Id)
 {
+	if (!ind.contains(Id))
+		throw std::exception("Немає такого Autor Id");
 	long Id_of_last;
 	file.seekg(ServiceData::service_data_size + (ind.size() - 1) * Autor::size, std::ios::beg);
 	file.read(reinterpret_cast<char*>(&Id_of_last), sizeof(Id_of_last));
@@ -102,6 +106,8 @@ void AutorRepository::Delete(long Id)
 
 void AutorRepository::Update(const Autor& data)
 {
+	if (!ind.contains(data.Id))
+		throw std::exception("Немає такого Autor Id");
 	Write(data, ind[data.Id]);
 }
 
@@ -123,11 +129,11 @@ void AutorRepository::Insert(const Autor& data)
 
 std::vector<Autor> AutorRepository::GetAll()
 {
-	std::vector<Autor> vector(ind.size());
+	std::vector<Autor> vector;
 	file.seekg(ServiceData::service_data_size, std::ios::beg);
 	int i = 0;
 	for (const auto& x : ind) {
-		vector[i++] = Get(x.first);
+		vector.push_back(Get(x.first));
 	}
 
 	return vector;

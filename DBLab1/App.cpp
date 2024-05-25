@@ -62,119 +62,126 @@ void App::Run()
 	while (true) {
 		std::cin >> str;
 		comm = ToCommand(str);
-		switch (comm)
+		try
 		{
-		case GET_M:
-			std::cout << "Region Id: ";
-			std::cin >> region.Id;
-			std::cout << rep->Regions.Get(region.Id) << '\n';
-			break;
+			switch (comm)
+			{
+			case GET_M:
+				std::cout << "Region Id: ";
+				std::cin >> region.Id;
+				std::cout << rep->Regions.Get(region.Id) << '\n';
+				break;
 
-		case DEL_M:
-			std::cout << "Region Id: ";
-			std::cin >> region.Id;
-			rep->Regions.Delete(region.Id);
-			break;
+			case DEL_M:
+				std::cout << "Region Id: ";
+				std::cin >> region.Id;
+				rep->Regions.Delete(region.Id);
+				break;
 
-		case UPD_M:
-			std::cout << "Region Id: ";
-			std::cin >> region.Id;
-			std::cout << "Region Name: ";
-			getline(region.RegionName, 50);
-			rep->Regions.Update(region);
-			break;
+			case UPD_M:
+				std::cout << "Region Id: ";
+				std::cin >> region.Id;
+				std::cout << "Region Name: ";
+				getline(region.RegionName, 50);
+				rep->Regions.Update(region);
+				break;
 
-		case INS_M:
-			std::cout << "Region Name: ";
-			getline(region.RegionName, 50);
-			rep->Regions.Insert(region);
-			break;
+			case INS_M:
+				std::cout << "Region Name: ";
+				getline(region.RegionName, 50);
+				rep->Regions.Insert(region);
+				break;
 
-		case CALC_M:
-			std::cout << rep->Regions.GetAll().size() << '\n';
-			break;
+			case CALC_M:
+				std::cout << rep->Regions.GetAll().size() << '\n';
+				break;
 
-		case UT_M:
-			for (const auto& x : rep->Regions.GetAll())
-				std::cout << x << '\n';
-			break;
+			case UT_M:
+				for (const auto& x : rep->Regions.GetAll())
+					std::cout << x << '\n';
+				break;
 
-		case GET_S:
-			std::cout << "Autor Id: ";
-			std::cin >> autor.Id;
-			std::cout << rep->Autors.Get(autor.Id) << '\n';
-			break;
+			case GET_S:
+				std::cout << "Autor Id: ";
+				std::cin >> autor.Id;
+				std::cout << rep->Autors.Get(autor.Id) << '\n';
+				break;
 
-		case DEL_S:
-			std::cout << "Autor Id: ";
-			std::cin >> autor.Id;
-			rep->Autors.Delete(autor.Id);
-			break;
+			case DEL_S:
+				std::cout << "Autor Id: ";
+				std::cin >> autor.Id;
+				rep->Autors.Delete(autor.Id);
+				break;
 
-		case UPD_S:
-			std::cout << "Autor Id: ";
-			std::cin >> autor.Id;
-			std::cout << "RegionId: ";
-			std::cin >> autor.RegionId;
-			std::cout << "AutorName: ";
-			getline(autor.AutorName, 50);
-			std::cout << "Pseudonym: ";
-			getline(autor.Pseudonym, 50);
-			rep->Autors.Insert(autor);
-			break;
+			case UPD_S:
+				std::cout << "Autor Id: ";
+				std::cin >> autor.Id;
+				std::cout << "RegionId: ";
+				std::cin >> autor.RegionId;
+				std::cout << "AutorName: ";
+				getline(autor.AutorName, 50);
+				std::cout << "Pseudonym: ";
+				getline(autor.Pseudonym, 50);
+				rep->Autors.Insert(autor);
+				break;
 
-		case INS_S:
-			std::cout << "RegionId: ";
-			std::cin >> autor.RegionId;
-			std::cout << "AutorName: ";
-			getline(autor.AutorName, 50);
-			std::cout << "Pseudonym: ";
-			getline(autor.Pseudonym, 50);
-			rep->Autors.Insert(autor);
-			break;
+			case INS_S:
+				std::cout << "RegionId: ";
+				std::cin >> autor.RegionId;
+				std::cout << "AutorName: ";
+				getline(autor.AutorName, 50);
+				std::cout << "Pseudonym: ";
+				getline(autor.Pseudonym, 50);
+				rep->Autors.Insert(autor);
+				break;
 
-		case CALC_S:
-			std::cout << rep->Autors.GetAll().size() << '\n';
-			break;
+			case CALC_S:
+				std::cout << rep->Autors.GetAll().size() << '\n';
+				break;
 
-		case UT_S:
-			for (const auto& x : rep->Autors.GetAll())
-				std::cout << x << '\n';
-			break;
+			case UT_S:
+				for (const auto& x : rep->Autors.GetAll())
+					std::cout << x << '\n';
+				break;
 
-		case CALC_S2:
-			std::cout << "RegionId: ";
-			std::cin >> autor.RegionId;
-			for (const auto& x : rep->Autors.GetByRegionId(autor.RegionId))
-				std::cout << x << '\n';
-			break;
+			case CALC_S2:
+				std::cout << "RegionId: ";
+				std::cin >> autor.RegionId;
+				for (const auto& x : rep->Autors.GetByRegionId(autor.RegionId))
+					std::cout << x << '\n';
+				break;
 
-		case INVALID:
-			std::cout << "Неправильна команда\n";
-			break;
+			case INVALID:
+				std::cout << "Неправильна команда\n";
+				break;
 
-		case HELP:
-			std::cout << "Список команд:\n";
+			case HELP:
+				std::cout << "Список команд:\n";
 
-			std::cout << "\t\"get-m\" - оримати Region за його Id\n";
-			std::cout << "\t\"del-m\" - видалити Region за його Id\n";
-			std::cout << "\t\"update-m\" - оновити Region за його Id\n";
-			std::cout << "\t\"insert-m\" - додати новий Region\n";
-			std::cout << "\t\"calc-m\" - кількість Region-ів\n";
-			std::cout << "\t\"ut-m\" - отримати всі Region-и\n";
+				std::cout << "\t\"get-m\" - оримати Region за його Id\n";
+				std::cout << "\t\"del-m\" - видалити Region за його Id\n";
+				std::cout << "\t\"update-m\" - оновити Region за його Id\n";
+				std::cout << "\t\"insert-m\" - додати новий Region\n";
+				std::cout << "\t\"calc-m\" - кількість Region-ів\n";
+				std::cout << "\t\"ut-m\" - отримати всі Region-и\n";
 
-			std::cout << "\t\"get-s\" - оримати Autor за його Id\n";
-			std::cout << "\t\"del-s\" - видалити Autor за його Id\n";
-			std::cout << "\t\"update-s\" - оновити Autor за його Id\n";
-			std::cout << "\t\"insert-s\" - додати нового Autor-а\n";
-			std::cout << "\t\"calc-s\" - кількість Autor-ів\n";
-			std::cout << "\t\"calc-s2\" - кількість Autor-ів з заданим RegionId\n";
-			std::cout << "\t\"ut-s\" - отримати всіх Autor-ів\n";
-			break;
+				std::cout << "\t\"get-s\" - оримати Autor за його Id\n";
+				std::cout << "\t\"del-s\" - видалити Autor за його Id\n";
+				std::cout << "\t\"update-s\" - оновити Autor за його Id\n";
+				std::cout << "\t\"insert-s\" - додати нового Autor-а\n";
+				std::cout << "\t\"calc-s\" - кількість Autor-ів\n";
+				std::cout << "\t\"calc-s2\" - кількість Autor-ів з заданим RegionId\n";
+				std::cout << "\t\"ut-s\" - отримати всіх Autor-ів\n";
+				break;
 
-		case EXIT:
-			return;
-		default: throw std::exception("Unknown Command");
+			case EXIT:
+				return;
+			default: throw std::exception("Невідома команда");
+			}
+		}
+		catch (const std::exception& exep)
+		{
+			std::cout << exep.what();
 		}
 	}
 }

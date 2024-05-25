@@ -1,4 +1,5 @@
 #include "Repository.h"
+#include <execution>
 
 using namespace Repository;
 using namespace Model;
@@ -69,6 +70,8 @@ RegionRepository::~RegionRepository()
 
 Region RegionRepository::Get(long Id)
 {
+	if (!ind.contains(Id))
+		throw std::exception("Немає такого Region Id");
 	Region obj;
 	file.seekg(ServiceData::service_data_size + ind[Id] * Region::size, std::ios::beg);
 	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
@@ -79,6 +82,9 @@ Region RegionRepository::Get(long Id)
 
 void RegionRepository::Delete(long Id)
 {
+	if (!ind.contains(Id))
+		throw std::exception("Немає такого Region Id");
+
 	for (const auto& x : slave->GetByRegionId(Id))
 		slave->Delete(x.Id);
 
@@ -99,6 +105,8 @@ void RegionRepository::Delete(long Id)
 
 void RegionRepository::Update(const Region& data)
 {
+	if (!ind.contains(data.Id))
+		throw std::exception("Немає такого Region Id");
 	Write(data, ind[data.Id]);
 }
 
@@ -121,11 +129,11 @@ void RegionRepository::Insert(const Region& data)
 
 std::vector<Region> RegionRepository::GetAll()
 {
-	std::vector<Region> vector(ind.size());
+	std::vector<Region> vector;
 	file.seekg(ServiceData::service_data_size, std::ios::beg);
 	int i = 0;
 	for (const auto& x : ind) {
-		vector[i++] = Get(x.first);
+		vector.push_back(Get(x.first));
 	}
 
 	return vector;
