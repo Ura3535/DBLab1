@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/DBLab1/DataBase/Autors.fl
+/DBLab1/DataBase/Autors.ind
+/DBLab1/DataBase/Regions.fl
+/DBLab1/DataBase/Regions.ind
