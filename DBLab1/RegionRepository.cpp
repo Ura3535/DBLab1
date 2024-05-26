@@ -127,7 +127,7 @@ void RegionRepository::Insert(const Region& data)
 	file.write(reinterpret_cast<const char*>(&auto_inc_key), sizeof(auto_inc_key));
 }
 
-size_t Repository::RegionRepository::Calc()
+size_t RegionRepository::Calc()
 {
 	return ind.size();
 }

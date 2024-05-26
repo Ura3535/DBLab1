@@ -43,15 +43,6 @@ App::Command App::ToCommand(const std::string& strCommand)
 	return INVALID;
 }
 
-App::App()
-	: rep(new Repository::FileRepository)
-{}
-
-App::~App()
-{
-	delete rep;
-}
-
 void App::Run()
 {
 	std::string str;
@@ -69,13 +60,13 @@ void App::Run()
 			case GET_M:
 				std::cout << "Region Id: ";
 				std::cin >> region.Id;
-				std::cout << rep->Regions.Get(region.Id) << '\n';
+				std::cout << rep.Regions.Get(region.Id) << '\n';
 				break;
 
 			case DEL_M:
 				std::cout << "Region Id: ";
 				std::cin >> region.Id;
-				rep->Regions.Delete(region.Id);
+				rep.Regions.Delete(region.Id);
 				break;
 
 			case UPD_M:
@@ -83,34 +74,34 @@ void App::Run()
 				std::cin >> region.Id;
 				std::cout << "Region Name: ";
 				getline(region.RegionName, 50);
-				rep->Regions.Update(region);
+				rep.Regions.Update(region);
 				break;
 
 			case INS_M:
 				std::cout << "Region Name: ";
 				getline(region.RegionName, 50);
-				rep->Regions.Insert(region);
+				rep.Regions.Insert(region);
 				break;
 
 			case CALC_M:
-				std::cout << rep->Regions.Calc() << '\n';
+				std::cout << rep.Regions.Calc() << '\n';
 				break;
 
 			case UT_M:
-				for (const auto& x : rep->Regions.GetAll())
+				for (const auto& x : rep.Regions.GetAll())
 					std::cout << x << '\n';
 				break;
 
 			case GET_S:
 				std::cout << "Autor Id: ";
 				std::cin >> autor.Id;
-				std::cout << rep->Autors.Get(autor.Id) << '\n';
+				std::cout << rep.Autors.Get(autor.Id) << '\n';
 				break;
 
 			case DEL_S:
 				std::cout << "Autor Id: ";
 				std::cin >> autor.Id;
-				rep->Autors.Delete(autor.Id);
+				rep.Autors.Delete(autor.Id);
 				break;
 
 			case UPD_S:
@@ -122,7 +113,7 @@ void App::Run()
 				getline(autor.AutorName, 50);
 				std::cout << "Pseudonym: ";
 				getline(autor.Pseudonym, 50);
-				rep->Autors.Insert(autor);
+				rep.Autors.Insert(autor);
 				break;
 
 			case INS_S:
@@ -132,22 +123,22 @@ void App::Run()
 				getline(autor.AutorName, 50);
 				std::cout << "Pseudonym: ";
 				getline(autor.Pseudonym, 50);
-				rep->Autors.Insert(autor);
+				rep.Autors.Insert(autor);
 				break;
 
 			case CALC_S:
-				std::cout << rep->Autors.Calc() << '\n';
+				std::cout << rep.Autors.Calc() << '\n';
 				break;
 
 			case UT_S:
-				for (const auto& x : rep->Autors.GetAll())
+				for (const auto& x : rep.Autors.GetAll())
 					std::cout << x << '\n';
 				break;
 
 			case CALC_S2:
 				std::cout << "RegionId: ";
 				std::cin >> autor.RegionId;
-				std::cout << rep->Autors.Calc(autor.RegionId) << '\n';
+				std::cout << rep.Autors.Calc(autor.RegionId) << '\n';
 				break;
 
 			case INVALID:

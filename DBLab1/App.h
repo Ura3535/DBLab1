@@ -13,10 +13,8 @@ class App
 
 	Command ToCommand(const std::string& strCommand);
 
-	Repository::FileRepository* rep;
+	Repository::FileRepository rep;
 public:
-	App();
-	~App();
 
 	void Run();
 };
