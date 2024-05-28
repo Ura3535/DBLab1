@@ -1,8 +1,15 @@
 #include "Repository.h"
-#include <execution>
+//#include <execution>
 
 using namespace Repository;
 using namespace Model;
+
+static long get_min_pos(std::multiset<long>& trash) {
+	auto min_it = trash.begin();
+	long res = *min_it;
+	trash.erase(min_it);
+	return res;
+}
 
 void RegionRepository::CreateTable(const fs::path& FileFL)
 {
@@ -18,6 +25,32 @@ void RegionRepository::Write(const Region& data, long pos)
 	file.write(data.RegionName, sizeof(data.RegionName));
 }
 
+Model::Region RegionRepository::Read(long pos)
+{
+	Model::Region obj;
+	file.seekg(ServiceData::service_data_size + pos * Region::size, std::ios::beg);
+	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
+	file.read(obj.RegionName, sizeof(obj.RegionName));
+
+	return obj;
+}
+
+void RegionRepository::Defragment()
+{
+	while (!trash.empty())
+	{
+		long hole = get_min_pos(trash);
+		auto max_pair = std::max_element(
+			ind.begin(), ind.end(),
+			[](const std::pair<const long, long>& p1, const std::pair<const long, long>& p2) {
+				return p1.second < p2.second;
+			});
+		if (max_pair->second <= hole) break;
+		Write(Get(max_pair->first), hole);
+		ind[max_pair->first] = hole;
+	}
+}
+
 RegionRepository::RegionRepository(const fs::path& DBFolder)
 	: DBFolder(DBFolder)
 	, slave(nullptr)
@@ -25,7 +58,7 @@ RegionRepository::RegionRepository(const fs::path& DBFolder)
 	fs::path FileFL = DBFolder / "Regions.fl";
 	fs::path FileIND = DBFolder / "Regions.ind";
 
-	if (!std::filesystem::exists(FileFL))
+	if (!fs::exists(FileFL))
 		CreateTable(FileFL);
 	file.open(FileFL, std::ios::in | std::ios::out | std::ios::binary);
 
@@ -58,26 +91,26 @@ RegionRepository::RegionRepository(const fs::path& DBFolder)
 
 RegionRepository::~RegionRepository()
 {
-	std::ofstream index(DBFolder / "Regions.ind", std::ios::out | std::ios::trunc);
+	Defragment();
+
+	fs::path FileFL = DBFolder / "Regions.fl";
+	fs::path FileIND = DBFolder / "Regions.ind";
+
+	std::ofstream index(FileIND, std::ios::out | std::ios::trunc);
 	for (const auto& x : ind)
 		index << x.first << ' ' << x.second << '\n';
 
 	ServiceData serv_data{ ind.size(), auto_inc_key, true };
 	serv_data.save(file);
 
-	//TODO: eraze end of file
+	fs::resize_file(FileFL, ServiceData::service_data_size + ind.size() * Region::size);
 }
 
 Region RegionRepository::Get(long Id)
 {
 	if (!ind.contains(Id))
 		throw std::exception("Немає такого Region Id");
-	Region obj;
-	file.seekg(ServiceData::service_data_size + ind[Id] * Region::size, std::ios::beg);
-	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
-	file.read(obj.RegionName, sizeof(obj.RegionName));
-
-	return obj;
+	return Read(ind[Id]);
 }
 
 void RegionRepository::Delete(long Id)
@@ -88,14 +121,7 @@ void RegionRepository::Delete(long Id)
 	for (const auto& x : slave->GetByRegionId(Id))
 		slave->Delete(x.Id);
 
-	long Id_of_last;
-	file.seekg(ServiceData::service_data_size + (ind.size() - 1) * Region::size, std::ios::beg);
-	file.read(reinterpret_cast<char*>(&Id_of_last), sizeof(Id_of_last));
-	Region tmp = Get(Id_of_last);
-
-	Write(tmp, ind[Id]);
-
-	ind[tmp.Id] = ind[Id];
+	trash.insert(ind[Id]);
 	ind.erase(Id);
 
 	size_t data_num = ind.size();
@@ -115,10 +141,9 @@ void RegionRepository::Insert(const Region& data)
 	Region data_with_Id(data);
 	data_with_Id.Id = auto_inc_key++;
 
-	Write(data_with_Id, (long)ind.size());
-
-	ind[data_with_Id.Id] = (long)ind.size();
-
+	long pos = trash.empty() ? (long)ind.size() : get_min_pos(trash);
+	Write(data_with_Id, pos);
+	ind[data_with_Id.Id] = pos;
 
 	size_t data_num = ind.size();
 	file.seekp(ServiceData::data_num_pos, std::ios::beg);
@@ -135,7 +160,6 @@ size_t RegionRepository::Calc()
 std::vector<Region> RegionRepository::GetAll()
 {
 	std::vector<Region> vector;
-	file.seekg(ServiceData::service_data_size, std::ios::beg);
 	for (const auto& x : ind) {
 		vector.push_back(Get(x.first));
 	}

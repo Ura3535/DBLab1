@@ -3,6 +3,13 @@
 using namespace Repository;
 using namespace Model;
 
+static long get_min_pos(std::multiset<long>& trash) {
+	auto min_it = trash.begin();
+	long res = *min_it;
+	trash.erase(min_it);
+	return res;
+}
+
 void AutorRepository::CreateTable(const fs::path& FileFL)
 {
 	std::fstream new_table(FileFL, std::ios::out | std::ios::binary);
@@ -20,13 +27,41 @@ void AutorRepository::Write(const Autor& data, long pos)
 	file.write(data.Pseudonym, sizeof(data.Pseudonym));
 }
 
+Model::Autor AutorRepository::Read(long pos)
+{
+	Autor obj;
+	file.seekg(ServiceData::service_data_size + pos * Autor::size, std::ios::beg);
+	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
+	file.read(reinterpret_cast<char*>(&obj.RegionId), sizeof(obj.RegionId));
+	file.read(obj.AutorName, sizeof(obj.AutorName));
+	file.read(obj.Pseudonym, sizeof(obj.Pseudonym));
+
+	return obj;
+}
+
+void AutorRepository::Defragment()
+{
+	while (!trash.empty())
+	{
+		long hole = get_min_pos(trash);
+		auto max_pair = std::max_element(
+			ind.begin(), ind.end(),
+			[](const std::pair<const long, long>& p1, const std::pair<const long, long>& p2) {
+				return p1.second < p2.second;
+			});
+		if (max_pair->second <= hole) break;
+		Write(Get(max_pair->first), hole);
+		ind[max_pair->first] = hole;
+	}
+}
+
 AutorRepository::AutorRepository(const fs::path& DBFolder)
 	: DBFolder(DBFolder)
 {
 	fs::path FileFL = DBFolder / "Autors.fl";
 	fs::path FileIND = DBFolder / "Autors.ind";
 
-	if (!std::filesystem::exists(FileFL))
+	if (!fs::exists(FileFL))
 		CreateTable(FileFL);
 	file.open(FileFL, std::ios::in | std::ios::out | std::ios::binary);
 
@@ -59,7 +94,12 @@ AutorRepository::AutorRepository(const fs::path& DBFolder)
 
 AutorRepository::~AutorRepository()
 {
-	std::ofstream index_table(DBFolder / "Autors.ind", std::ios::out | std::ios::trunc);
+	Defragment();
+
+	fs::path FileFL = DBFolder / "Autors.fl";
+	fs::path FileIND = DBFolder / "Autors.ind";
+
+	std::ofstream index_table(FileIND, std::ios::out | std::ios::trunc);
 
 	for (const auto& x : ind)
 		index_table << x.first << ' ' << x.second << '\n';
@@ -67,37 +107,24 @@ AutorRepository::~AutorRepository()
 	ServiceData serv_data{ ind.size(), auto_inc_key, true };
 	serv_data.save(file);
 
-	//TODO: eraze end of file
+	fs::resize_file(FileFL, ServiceData::service_data_size + ind.size() * Autor::size);
 }
 
 Autor AutorRepository::Get(long Id)
 {
 	if (!ind.contains(Id))
 		throw std::exception("Немає такого Autor Id");
-	Autor obj;
-	file.seekg(ServiceData::service_data_size + ind[Id] * Autor::size, std::ios::beg);
-	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
-	file.read(reinterpret_cast<char*>(&obj.RegionId), sizeof(obj.RegionId));
-	file.read(obj.AutorName, sizeof(obj.AutorName));
-	file.read(obj.Pseudonym, sizeof(obj.Pseudonym));
 
-	return obj;
+	return Read(ind[Id]);
 }
 
 void AutorRepository::Delete(long Id)
 {
 	if (!ind.contains(Id))
 		throw std::exception("Немає такого Autor Id");
-	long Id_of_last;
-	file.seekg(ServiceData::service_data_size + (ind.size() - 1) * Autor::size, std::ios::beg);
-	file.read(reinterpret_cast<char*>(&Id_of_last), sizeof(Id_of_last));
-	Autor tmp = Get(Id_of_last);
 
-	Write(tmp, ind[Id]);
-
-	ind[tmp.Id] = ind[Id];
+	trash.insert(ind[Id]);
 	ind.erase(Id);
-
 
 	size_t data_num = ind.size();
 	file.seekp(ServiceData::data_num_pos, std::ios::beg);
@@ -116,9 +143,9 @@ void AutorRepository::Insert(const Autor& data)
 	Autor data_with_Id(data);
 	data_with_Id.Id = auto_inc_key++;
 
-	Write(data_with_Id, (long)ind.size());
-
-	ind[data_with_Id.Id] = (long)ind.size();
+	long pos = trash.empty() ? (long)ind.size() : get_min_pos(trash);
+	Write(data_with_Id, pos);
+	ind[data_with_Id.Id] = pos;
 
 	size_t data_num = ind.size();
 	file.seekp(ServiceData::data_num_pos, std::ios::beg);
@@ -134,9 +161,7 @@ size_t AutorRepository::Calc()
 
 size_t AutorRepository::Calc(long RegionId)
 {
-	std::vector<Autor> vector;
 	Autor tmp;
-	file.seekg(ServiceData::service_data_size, std::ios::beg);
 	size_t size = 0;
 	for (const auto& x : ind) {
 		tmp = Get(x.first);
@@ -150,7 +175,6 @@ size_t AutorRepository::Calc(long RegionId)
 std::vector<Autor> AutorRepository::GetAll()
 {
 	std::vector<Autor> vector;
-	file.seekg(ServiceData::service_data_size, std::ios::beg);
 	for (const auto& x : ind) {
 		vector.push_back(Get(x.first));
 	}
@@ -162,7 +186,6 @@ std::vector<Autor> AutorRepository::GetByRegionId(long RegionId)
 {
 	std::vector<Autor> vector;
 	Autor tmp;
-	file.seekg(ServiceData::service_data_size, std::ios::beg);
 	for (const auto& x : ind) {
 		tmp = Get(x.first);
 		if (tmp.RegionId == RegionId)

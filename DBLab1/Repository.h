@@ -4,6 +4,7 @@
 #include <fstream>
 #include <vector>
 #include <unordered_map>
+#include <set>
 #include <filesystem>
 
 namespace fs = std::filesystem;
@@ -28,11 +29,14 @@ namespace Repository
 	class AutorRepository {
 		void CreateTable(const fs::path& FileFL);
 		void Write(const Model::Autor& data, long pos);
+		Model::Autor Read(long pos);
+		void Defragment();
 
 		fs::path DBFolder;
 		std::fstream file;
 		long auto_inc_key;
 		std::unordered_map<long, long> ind;
+		std::multiset<long> trash;
 
 		friend struct Repository;
 	public:
@@ -52,11 +56,14 @@ namespace Repository
 	class RegionRepository {
 		void CreateTable(const fs::path& FileFL);
 		void Write(const Model::Region& data, long pos);
+		Model::Region Read(long pos);
+		void Defragment();
 
 		fs::path DBFolder;
 		std::fstream file;
 		long auto_inc_key;
 		std::unordered_map<long, long> ind;
+		std::multiset<long> trash;
 
 		friend struct FileRepository;
 		AutorRepository* slave;
