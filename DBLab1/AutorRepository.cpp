@@ -41,6 +41,7 @@ Model::Autor AutorRepository::Read(long pos)
 
 void AutorRepository::Defragment()
 {
+	if (ind.empty()) return;
 	while (!trash.empty())
 	{
 		long hole = get_min_pos(trash);

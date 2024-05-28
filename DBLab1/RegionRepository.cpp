@@ -37,6 +37,7 @@ Model::Region RegionRepository::Read(long pos)
 
 void RegionRepository::Defragment()
 {
+	if (ind.empty()) return;
 	while (!trash.empty())
 	{
 		long hole = get_min_pos(trash);
