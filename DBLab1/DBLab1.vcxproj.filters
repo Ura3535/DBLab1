@@ -27,10 +27,10 @@
     <ClCompile Include="Repository.cpp">
       <Filter>Repository</Filter>
     </ClCompile>
-    <ClCompile Include="RegionRepository.cpp">
+    <ClCompile Include="CategoryRepository.cpp">
       <Filter>Repository</Filter>
     </ClCompile>
-    <ClCompile Include="AutorRepository.cpp">
+    <ClCompile Include="ProductRepository.cpp">
       <Filter>Repository</Filter>
     </ClCompile>
     <ClCompile Include="App.cpp">
@@ -38,10 +38,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Autor.h">
+    <ClInclude Include="Product.h">
       <Filter>Models</Filter>
     </ClInclude>
-    <ClInclude Include="Region.h">
+    <ClInclude Include="Category.h">
       <Filter>Models</Filter>
     </ClInclude>
     <ClInclude Include="Model.h">
@@ -53,19 +53,5 @@
     <ClInclude Include="App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DataBase\Autors.fl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="DataBase\Autors.ind">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="DataBase\Regions.fl">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="DataBase\Regions.ind">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

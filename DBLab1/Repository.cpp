@@ -26,8 +26,8 @@ void ServiceData::save(std::fstream& file) const
 }
 
 FileRepository::FileRepository(const fs::path& DBFolder)
-	: Regions(DBFolder)
-	, Autors(DBFolder)
+	: Categories(DBFolder)
+	, Products(DBFolder)
 {
-	Regions.slave = &Autors;
+	Categories.slave = &Products;
 }

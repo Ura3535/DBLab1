@@ -1,8 +1,6 @@
 #include "Repository.h"
-//#include <execution>
 
 using namespace Repository;
-using namespace Model;
 
 static long get_min_pos(std::multiset<long>& trash) {
 	auto min_it = trash.begin();
@@ -11,31 +9,38 @@ static long get_min_pos(std::multiset<long>& trash) {
 	return res;
 }
 
-void RegionRepository::CreateTable(const fs::path& FileFL)
+void ProductRepository::CreateTable(const fs::path& FileFL)
 {
 	std::fstream new_table(FileFL, std::ios::out | std::ios::binary);
 	ServiceData default_serv_data;
 	default_serv_data.save(new_table);
+	
 }
 
-void RegionRepository::Write(const Region& data, long pos)
+void ProductRepository::Write(const Model::Product& data, long pos)
 {
-	file.seekp(ServiceData::service_data_size + pos * Region::size, std::ios::beg);
+	file.seekp(ServiceData::service_data_size + pos * Model::Product::size, std::ios::beg);
 	file.write(reinterpret_cast<const char*>(&data.Id), sizeof(data.Id));
-	file.write(data.RegionName, sizeof(data.RegionName));
+	file.write(data.Name, sizeof(data.Name));
+	file.write(reinterpret_cast<const char*>(&data.Price), sizeof(data.Price));
+	file.write(reinterpret_cast<const char*>(&data.CategoryId), sizeof(data.CategoryId));
+	file.write(data.Description, sizeof(data.Description));
 }
 
-Model::Region RegionRepository::Read(long pos)
+Model::Product ProductRepository::Read(long pos)
 {
-	Model::Region obj;
-	file.seekg(ServiceData::service_data_size + pos * Region::size, std::ios::beg);
+	Model::Product obj;
+	file.seekg(ServiceData::service_data_size + pos * Model::Product::size, std::ios::beg);
 	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
-	file.read(obj.RegionName, sizeof(obj.RegionName));
+	file.read(obj.Name, sizeof(obj.Name));
+	file.read(reinterpret_cast<char*>(&obj.Price), sizeof(obj.Price));
+	file.read(reinterpret_cast<char*>(&obj.CategoryId), sizeof(obj.CategoryId));
+	file.read(obj.Description, sizeof(obj.Description));
 
 	return obj;
 }
 
-void RegionRepository::Defragment()
+void ProductRepository::Defragment()
 {
 	if (ind.empty()) return;
 	while (!trash.empty())
@@ -52,12 +57,11 @@ void RegionRepository::Defragment()
 	}
 }
 
-RegionRepository::RegionRepository(const fs::path& DBFolder)
+ProductRepository::ProductRepository(const fs::path& DBFolder)
 	: DBFolder(DBFolder)
-	, slave(nullptr)
 {
-	fs::path FileFL = DBFolder / "Regions.fl";
-	fs::path FileIND = DBFolder / "Regions.ind";
+	fs::path FileFL = DBFolder / "Products.fl";
+	fs::path FileIND = DBFolder / "Products.ind";
 
 	if (!fs::exists(FileFL))
 		CreateTable(FileFL);
@@ -79,7 +83,7 @@ RegionRepository::RegionRepository(const fs::path& DBFolder)
 	else {
 		long Id;
 		for (int i = 0; i != serv_data.data_num; ++i) {
-			file.seekg(ServiceData::service_data_size + i * Region::size, std::ios::beg);
+			file.seekg(ServiceData::service_data_size + i * Model::Product::size, std::ios::beg);
 			file.read(reinterpret_cast<char*>(&Id), sizeof(Id));
 			ind[Id] = i;
 		}
@@ -90,37 +94,36 @@ RegionRepository::RegionRepository(const fs::path& DBFolder)
 	file.write(reinterpret_cast<const char*>(&make_ind_bad), sizeof(make_ind_bad));
 }
 
-RegionRepository::~RegionRepository()
+ProductRepository::~ProductRepository()
 {
 	Defragment();
 
-	fs::path FileFL = DBFolder / "Regions.fl";
-	fs::path FileIND = DBFolder / "Regions.ind";
+	fs::path FileFL = DBFolder / "Products.fl";
+	fs::path FileIND = DBFolder / "Products.ind";
 
-	std::ofstream index(FileIND, std::ios::out | std::ios::trunc);
+	std::ofstream index_table(FileIND, std::ios::out | std::ios::trunc);
+
 	for (const auto& x : ind)
-		index << x.first << ' ' << x.second << '\n';
+		index_table << x.first << ' ' << x.second << '\n';
 
 	ServiceData serv_data{ ind.size(), auto_inc_key, true };
 	serv_data.save(file);
 
-	fs::resize_file(FileFL, ServiceData::service_data_size + ind.size() * Region::size);
+	fs::resize_file(FileFL, ServiceData::service_data_size + ind.size() * Model::Product::size);
 }
 
-Region RegionRepository::Get(long Id)
+Model::Product ProductRepository::Get(long Id)
 {
 	if (!ind.contains(Id))
-		throw std::exception("Немає такого Region Id");
+		throw std::exception("Немає такого Product Id");
+
 	return Read(ind[Id]);
 }
 
-void RegionRepository::Delete(long Id)
+void ProductRepository::Delete(long Id)
 {
 	if (!ind.contains(Id))
-		throw std::exception("Немає такого Region Id");
-
-	for (const auto& x : slave->GetByRegionId(Id))
-		slave->Delete(x.Id);
+		throw std::exception("Немає такого Product Id");
 
 	trash.insert(ind[Id]);
 	ind.erase(Id);
@@ -130,16 +133,16 @@ void RegionRepository::Delete(long Id)
 	file.write(reinterpret_cast<const char*>(&data_num), sizeof(data_num));
 }
 
-void RegionRepository::Update(const Region& data)
+void ProductRepository::Update(const Model::Product& data)
 {
 	if (!ind.contains(data.Id))
-		throw std::exception("Немає такого Region Id");
+		throw std::exception("Немає такого Product Id");
 	Write(data, ind[data.Id]);
 }
 
-void RegionRepository::Insert(const Region& data)
+void ProductRepository::Insert(const Model::Product& data)
 {
-	Region data_with_Id(data);
+	Model::Product data_with_Id(data);
 	data_with_Id.Id = auto_inc_key++;
 
 	long pos = trash.empty() ? (long)ind.size() : get_min_pos(trash);
@@ -153,16 +156,42 @@ void RegionRepository::Insert(const Region& data)
 	file.write(reinterpret_cast<const char*>(&auto_inc_key), sizeof(auto_inc_key));
 }
 
-size_t RegionRepository::Calc()
+size_t ProductRepository::Calc()
 {
 	return ind.size();
 }
 
-std::vector<Region> RegionRepository::GetAll()
+size_t ProductRepository::Calc(long CategoryId)
 {
-	std::vector<Region> vector;
+	Model::Product tmp;
+	size_t size = 0;
+	for (const auto& x : ind) {
+		tmp = Get(x.first);
+		if (tmp.CategoryId == CategoryId)
+			++size;
+	}
+
+	return size;
+}
+
+std::vector<Model::Product> ProductRepository::GetAll()
+{
+	std::vector<Model::Product> vector;
 	for (const auto& x : ind) {
 		vector.push_back(Get(x.first));
+	}
+
+	return vector;
+}
+
+std::vector<Model::Product> ProductRepository::GetByCategoryId(long CategoryId)
+{
+	std::vector<Model::Product> vector;
+	Model::Product tmp;
+	for (const auto& x : ind) {
+		tmp = Get(x.first);
+		if (tmp.CategoryId == CategoryId)
+			vector.push_back(tmp);
 	}
 
 	return vector;

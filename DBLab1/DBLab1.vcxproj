@@ -130,23 +130,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="App.cpp" />
-    <ClCompile Include="AutorRepository.cpp" />
+    <ClCompile Include="ProductRepository.cpp" />
     <ClCompile Include="DBLab1.cpp" />
-    <ClCompile Include="RegionRepository.cpp" />
+    <ClCompile Include="CategoryRepository.cpp" />
     <ClCompile Include="Repository.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="Autor.h" />
-    <ClInclude Include="Region.h" />
+    <ClInclude Include="Product.h" />
+    <ClInclude Include="Category.h" />
     <ClInclude Include="Repository.h" />
     <ClInclude Include="Model.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="DataBase\Autors.fl" />
-    <None Include="DataBase\Autors.ind" />
-    <None Include="DataBase\Regions.fl" />
-    <None Include="DataBase\Regions.ind" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

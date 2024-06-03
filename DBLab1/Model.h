@@ -1,6 +1,6 @@
 #pragma once
 
 namespace Model {
-	#include "Autor.h"
-	#include "Region.h"
+	#include "Product.h"
+	#include "Category.h"
 }

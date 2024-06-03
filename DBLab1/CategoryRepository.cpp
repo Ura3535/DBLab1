@@ -1,7 +1,7 @@
 #include "Repository.h"
+//#include <execution>
 
 using namespace Repository;
-using namespace Model;
 
 static long get_min_pos(std::multiset<long>& trash) {
 	auto min_it = trash.begin();
@@ -10,36 +10,31 @@ static long get_min_pos(std::multiset<long>& trash) {
 	return res;
 }
 
-void AutorRepository::CreateTable(const fs::path& FileFL)
+void CategoryRepository::CreateTable(const fs::path& FileFL)
 {
 	std::fstream new_table(FileFL, std::ios::out | std::ios::binary);
 	ServiceData default_serv_data;
 	default_serv_data.save(new_table);
-	
 }
 
-void AutorRepository::Write(const Autor& data, long pos)
+void CategoryRepository::Write(const Model::Category& data, long pos)
 {
-	file.seekp(ServiceData::service_data_size + pos * Autor::size, std::ios::beg);
+	file.seekp(ServiceData::service_data_size + pos * Model::Category::size, std::ios::beg);
 	file.write(reinterpret_cast<const char*>(&data.Id), sizeof(data.Id));
-	file.write(reinterpret_cast<const char*>(&data.RegionId), sizeof(data.RegionId));
-	file.write(data.AutorName, sizeof(data.AutorName));
-	file.write(data.Pseudonym, sizeof(data.Pseudonym));
+	file.write(data.Name, sizeof(data.Name));
 }
 
-Model::Autor AutorRepository::Read(long pos)
+Model::Category CategoryRepository::Read(long pos)
 {
-	Autor obj;
-	file.seekg(ServiceData::service_data_size + pos * Autor::size, std::ios::beg);
+	Model::Category obj;
+	file.seekg(ServiceData::service_data_size + pos * Model::Category::size, std::ios::beg);
 	file.read(reinterpret_cast<char*>(&obj.Id), sizeof(obj.Id));
-	file.read(reinterpret_cast<char*>(&obj.RegionId), sizeof(obj.RegionId));
-	file.read(obj.AutorName, sizeof(obj.AutorName));
-	file.read(obj.Pseudonym, sizeof(obj.Pseudonym));
+	file.read(obj.Name, sizeof(obj.Name));
 
 	return obj;
 }
 
-void AutorRepository::Defragment()
+void CategoryRepository::Defragment()
 {
 	if (ind.empty()) return;
 	while (!trash.empty())
@@ -56,11 +51,12 @@ void AutorRepository::Defragment()
 	}
 }
 
-AutorRepository::AutorRepository(const fs::path& DBFolder)
+CategoryRepository::CategoryRepository(const fs::path& DBFolder)
 	: DBFolder(DBFolder)
+	, slave(nullptr)
 {
-	fs::path FileFL = DBFolder / "Autors.fl";
-	fs::path FileIND = DBFolder / "Autors.ind";
+	fs::path FileFL = DBFolder / "Categories.fl";
+	fs::path FileIND = DBFolder / "Categories.ind";
 
 	if (!fs::exists(FileFL))
 		CreateTable(FileFL);
@@ -82,7 +78,7 @@ AutorRepository::AutorRepository(const fs::path& DBFolder)
 	else {
 		long Id;
 		for (int i = 0; i != serv_data.data_num; ++i) {
-			file.seekg(ServiceData::service_data_size + i * Autor::size, std::ios::beg);
+			file.seekg(ServiceData::service_data_size + i * Model::Category::size, std::ios::beg);
 			file.read(reinterpret_cast<char*>(&Id), sizeof(Id));
 			ind[Id] = i;
 		}
@@ -93,36 +89,37 @@ AutorRepository::AutorRepository(const fs::path& DBFolder)
 	file.write(reinterpret_cast<const char*>(&make_ind_bad), sizeof(make_ind_bad));
 }
 
-AutorRepository::~AutorRepository()
+CategoryRepository::~CategoryRepository()
 {
 	Defragment();
 
-	fs::path FileFL = DBFolder / "Autors.fl";
-	fs::path FileIND = DBFolder / "Autors.ind";
+	fs::path FileFL = DBFolder / "Categories.fl";
+	fs::path FileIND = DBFolder / "Categories.ind";
 
-	std::ofstream index_table(FileIND, std::ios::out | std::ios::trunc);
-
+	std::ofstream index(FileIND, std::ios::out | std::ios::trunc);
 	for (const auto& x : ind)
-		index_table << x.first << ' ' << x.second << '\n';
+		index << x.first << ' ' << x.second << '\n';
 
 	ServiceData serv_data{ ind.size(), auto_inc_key, true };
 	serv_data.save(file);
 
-	fs::resize_file(FileFL, ServiceData::service_data_size + ind.size() * Autor::size);
+	fs::resize_file(FileFL, ServiceData::service_data_size + ind.size() * Model::Category::size);
 }
 
-Autor AutorRepository::Get(long Id)
+Model::Category CategoryRepository::Get(long Id)
 {
 	if (!ind.contains(Id))
-		throw std::exception("Немає такого Autor Id");
-
+		throw std::exception("Немає такого Category Id");
 	return Read(ind[Id]);
 }
 
-void AutorRepository::Delete(long Id)
+void CategoryRepository::Delete(long Id)
 {
 	if (!ind.contains(Id))
-		throw std::exception("Немає такого Autor Id");
+		throw std::exception("Немає такого Category Id");
+
+	for (const auto& x : slave->GetByCategoryId(Id))
+		slave->Delete(x.Id);
 
 	trash.insert(ind[Id]);
 	ind.erase(Id);
@@ -132,16 +129,16 @@ void AutorRepository::Delete(long Id)
 	file.write(reinterpret_cast<const char*>(&data_num), sizeof(data_num));
 }
 
-void AutorRepository::Update(const Autor& data)
+void CategoryRepository::Update(const Model::Category& data)
 {
 	if (!ind.contains(data.Id))
-		throw std::exception("Немає такого Autor Id");
+		throw std::exception("Немає такого Category Id");
 	Write(data, ind[data.Id]);
 }
 
-void AutorRepository::Insert(const Autor& data)
+void CategoryRepository::Insert(const Model::Category& data)
 {
-	Autor data_with_Id(data);
+	Model::Category data_with_Id(data);
 	data_with_Id.Id = auto_inc_key++;
 
 	long pos = trash.empty() ? (long)ind.size() : get_min_pos(trash);
@@ -155,42 +152,16 @@ void AutorRepository::Insert(const Autor& data)
 	file.write(reinterpret_cast<const char*>(&auto_inc_key), sizeof(auto_inc_key));
 }
 
-size_t AutorRepository::Calc()
+size_t CategoryRepository::Calc()
 {
 	return ind.size();
 }
 
-size_t AutorRepository::Calc(long RegionId)
+std::vector<Model::Category> CategoryRepository::GetAll()
 {
-	Autor tmp;
-	size_t size = 0;
-	for (const auto& x : ind) {
-		tmp = Get(x.first);
-		if (tmp.RegionId == RegionId)
-			++size;
-	}
-
-	return size;
-}
-
-std::vector<Autor> AutorRepository::GetAll()
-{
-	std::vector<Autor> vector;
+	std::vector<Model::Category> vector;
 	for (const auto& x : ind) {
 		vector.push_back(Get(x.first));
-	}
-
-	return vector;
-}
-
-std::vector<Autor> AutorRepository::GetByRegionId(long RegionId)
-{
-	std::vector<Autor> vector;
-	Autor tmp;
-	for (const auto& x : ind) {
-		tmp = Get(x.first);
-		if (tmp.RegionId == RegionId)
-			vector.push_back(tmp);
 	}
 
 	return vector;

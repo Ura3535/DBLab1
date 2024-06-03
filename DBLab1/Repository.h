@@ -26,10 +26,10 @@ namespace Repository
 		static constexpr size_t ind_is_correct_pos = sizeof(data_num) + sizeof(auto_inc_key);
 	};
 
-	class AutorRepository {
+	class ProductRepository {
 		void CreateTable(const fs::path& FileFL);
-		void Write(const Model::Autor& data, long pos);
-		Model::Autor Read(long pos);
+		void Write(const Model::Product& data, long pos);
+		Model::Product Read(long pos);
 		void Defragment();
 
 		fs::path DBFolder;
@@ -40,23 +40,23 @@ namespace Repository
 
 		friend struct Repository;
 	public:
-		AutorRepository(const fs::path& DBFolder);
-		~AutorRepository();
+		ProductRepository(const fs::path& DBFolder);
+		~ProductRepository();
 
-		Model::Autor Get(long Id);
+		Model::Product Get(long Id);
 		void Delete(long Id);
-		void Update(const Model::Autor& data);
-		void Insert(const Model::Autor& data);
+		void Update(const Model::Product& data);
+		void Insert(const Model::Product& data);
 		size_t Calc();
-		size_t Calc(long RegionId);
-		std::vector<Model::Autor> GetAll();
-		std::vector<Model::Autor> GetByRegionId(long RegionId);
+		size_t Calc(long CategoryId);
+		std::vector<Model::Product> GetAll();
+		std::vector<Model::Product> GetByCategoryId(long CategoryId);
 	};
 
-	class RegionRepository {
+	class CategoryRepository {
 		void CreateTable(const fs::path& FileFL);
-		void Write(const Model::Region& data, long pos);
-		Model::Region Read(long pos);
+		void Write(const Model::Category& data, long pos);
+		Model::Category Read(long pos);
 		void Defragment();
 
 		fs::path DBFolder;
@@ -66,25 +66,25 @@ namespace Repository
 		std::multiset<long> trash;
 
 		friend struct FileRepository;
-		AutorRepository* slave;
+		ProductRepository* slave;
 	public:
-		RegionRepository(const fs::path& DBFolder);
-		~RegionRepository();
+		CategoryRepository(const fs::path& DBFolder);
+		~CategoryRepository();
 
-		Model::Region Get(long Id);
+		Model::Category Get(long Id);
 		void Delete(long Id);
-		void Update(const Model::Region& data);
-		void Insert(const Model::Region& data);
+		void Update(const Model::Category& data);
+		void Insert(const Model::Category& data);
 		size_t Calc();
-		std::vector<Model::Region> GetAll();
+		std::vector<Model::Category> GetAll();
 	};
 
 	struct FileRepository
 	{
 		FileRepository(const fs::path& DBFolder = "DataBase");
 
-		RegionRepository Regions;
-		AutorRepository Autors;
+		CategoryRepository Categories;
+		ProductRepository Products;
 	};
 };
 

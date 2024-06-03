@@ -2,13 +2,20 @@
 #include "iostream"
 #include "execution"
 
-static std::ostream& operator<<(std::ostream& out, Model::Autor autor) {
-	out << autor.Id << ' ' << autor.RegionId << ' ' << autor.AutorName << ' ' << autor.Pseudonym;
+static std::ostream& operator<<(std::ostream& out, Model::Product product) {
+	out
+		<< product.Id << ' '
+		<< product.Name << ' '
+		<< product.Price << ' '
+		<< product.CategoryId << ' '
+		<< product.Description;
 	return out;
 }
 
-static std::ostream& operator<<(std::ostream& out, Model::Region region) {
-	out << region.Id << ' ' << region.RegionName;
+static std::ostream& operator<<(std::ostream& out, Model::Category category) {
+	out 
+		<< category.Id << ' '
+		<< category.Name;
 	return out;
 }
 
@@ -47,8 +54,8 @@ void App::Run()
 {
 	std::string str;
 	Command comm;
-	Model::Autor autor;
-	Model::Region region;
+	Model::Product product;
+	Model::Category category;
 
 	while (true) {
 		std::cin >> str;
@@ -58,87 +65,91 @@ void App::Run()
 			switch (comm)
 			{
 			case GET_M:
-				std::cout << "Region Id: ";
-				std::cin >> region.Id;
-				std::cout << rep.Regions.Get(region.Id) << '\n';
+				std::cout << "Category Id: ";
+				std::cin >> category.Id;
+				std::cout << rep.Categories.Get(category.Id) << '\n';
 				break;
 
 			case DEL_M:
-				std::cout << "Region Id: ";
-				std::cin >> region.Id;
-				rep.Regions.Delete(region.Id);
+				std::cout << "Category Id: ";
+				std::cin >> category.Id;
+				rep.Categories.Delete(category.Id);
 				break;
 
 			case UPD_M:
-				std::cout << "Region Id: ";
-				std::cin >> region.Id;
-				std::cout << "Region Name: ";
-				getline(region.RegionName, 50);
-				rep.Regions.Update(region);
+				std::cout << "Category Id: ";
+				std::cin >> category.Id;
+				std::cout << "Category Name: ";
+				getline(category.Name, 50);
+				rep.Categories.Update(category);
 				break;
 
 			case INS_M:
-				std::cout << "Region Name: ";
-				getline(region.RegionName, 50);
-				rep.Regions.Insert(region);
+				std::cout << "Category Name: ";
+				getline(category.Name, 50);
+				rep.Categories.Insert(category);
 				break;
 
 			case CALC_M:
-				std::cout << rep.Regions.Calc() << '\n';
+				std::cout << rep.Categories.Calc() << '\n';
 				break;
 
 			case UT_M:
-				for (const auto& x : rep.Regions.GetAll())
+				for (const auto& x : rep.Categories.GetAll())
 					std::cout << x << '\n';
 				break;
 
 			case GET_S:
-				std::cout << "Autor Id: ";
-				std::cin >> autor.Id;
-				std::cout << rep.Autors.Get(autor.Id) << '\n';
+				std::cout << "Product Id: ";
+				std::cin >> product.Id;
+				std::cout << rep.Products.Get(product.Id) << '\n';
 				break;
 
 			case DEL_S:
-				std::cout << "Autor Id: ";
-				std::cin >> autor.Id;
-				rep.Autors.Delete(autor.Id);
+				std::cout << "Product Id: ";
+				std::cin >> product.Id;
+				rep.Products.Delete(product.Id);
 				break;
 
 			case UPD_S:
-				std::cout << "Autor Id: ";
-				std::cin >> autor.Id;
-				std::cout << "RegionId: ";
-				std::cin >> autor.RegionId;
-				std::cout << "AutorName: ";
-				getline(autor.AutorName, 50);
-				std::cout << "Pseudonym: ";
-				getline(autor.Pseudonym, 50);
-				rep.Autors.Insert(autor);
+				std::cout << "Product Id: ";
+				std::cin >> product.Id;
+				std::cout << "Name: ";
+				getline(product.Name, 50);
+				std::cout << "Price: ";
+				std::cin >> product.Price;
+				std::cout << "CategoryId: ";
+				std::cin >> product.CategoryId;
+				std::cout << "Description: ";
+				getline(product.Description, 50);
+				rep.Products.Update(product);
 				break;
 
 			case INS_S:
-				std::cout << "RegionId: ";
-				std::cin >> autor.RegionId;
-				std::cout << "AutorName: ";
-				getline(autor.AutorName, 50);
-				std::cout << "Pseudonym: ";
-				getline(autor.Pseudonym, 50);
-				rep.Autors.Insert(autor);
+				std::cout << "Name: ";
+				getline(product.Name, 50);
+				std::cout << "Price: ";
+				std::cin >> product.Price;
+				std::cout << "CategoryId: ";
+				std::cin >> product.CategoryId;
+				std::cout << "Description: ";
+				getline(product.Description, 50);
+				rep.Products.Insert(product);
 				break;
 
 			case CALC_S:
-				std::cout << rep.Autors.Calc() << '\n';
+				std::cout << rep.Products.Calc() << '\n';
 				break;
 
 			case UT_S:
-				for (const auto& x : rep.Autors.GetAll())
+				for (const auto& x : rep.Products.GetAll())
 					std::cout << x << '\n';
 				break;
 
 			case CALC_S2:
-				std::cout << "RegionId: ";
-				std::cin >> autor.RegionId;
-				std::cout << rep.Autors.Calc(autor.RegionId) << '\n';
+				std::cout << "CategoryId: ";
+				std::cin >> product.CategoryId;
+				std::cout << rep.Products.Calc(product.CategoryId) << '\n';
 				break;
 
 			case INVALID:
@@ -148,20 +159,20 @@ void App::Run()
 			case HELP:
 				std::cout << "Список команд:\n";
 
-				std::cout << "\t\"get-m\" - оримати Region за його Id\n";
-				std::cout << "\t\"del-m\" - видалити Region за його Id\n";
-				std::cout << "\t\"update-m\" - оновити Region за його Id\n";
-				std::cout << "\t\"insert-m\" - додати новий Region\n";
-				std::cout << "\t\"calc-m\" - кількість Region-ів\n";
-				std::cout << "\t\"ut-m\" - отримати всі Region-и\n";
+				std::cout << "\t\"get-m\" - оримати Category за його Id\n";
+				std::cout << "\t\"del-m\" - видалити Category за його Id\n";
+				std::cout << "\t\"update-m\" - оновити Category за його Id\n";
+				std::cout << "\t\"insert-m\" - додати новий Category\n";
+				std::cout << "\t\"calc-m\" - кількість Category\n";
+				std::cout << "\t\"ut-m\" - отримати всі Category\n";
 
-				std::cout << "\t\"get-s\" - оримати Autor за його Id\n";
-				std::cout << "\t\"del-s\" - видалити Autor за його Id\n";
-				std::cout << "\t\"update-s\" - оновити Autor за його Id\n";
-				std::cout << "\t\"insert-s\" - додати нового Autor-а\n";
-				std::cout << "\t\"calc-s\" - кількість Autor-ів\n";
-				std::cout << "\t\"calc-s2\" - кількість Autor-ів з заданим RegionId\n";
-				std::cout << "\t\"ut-s\" - отримати всіх Autor-ів\n";
+				std::cout << "\t\"get-s\" - оримати Product за його Id\n";
+				std::cout << "\t\"del-s\" - видалити Product за його Id\n";
+				std::cout << "\t\"update-s\" - оновити Product за його Id\n";
+				std::cout << "\t\"insert-s\" - додати нового Product\n";
+				std::cout << "\t\"calc-s\" - кількість Product\n";
+				std::cout << "\t\"calc-s2\" - кількість Product з заданим CategoryId\n";
+				std::cout << "\t\"ut-s\" - отримати всіх Product\n";
 
 				std::cout << "\t\"help\" - всі команди\n";
 				std::cout << "\t\"exit\" - завершити виконання\n";
