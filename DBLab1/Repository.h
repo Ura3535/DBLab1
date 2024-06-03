@@ -81,7 +81,7 @@ namespace Repository
 
 	struct FileRepository
 	{
-		FileRepository(const fs::path& DBFolder = "DataBase");
+		FileRepository(const fs::path& DBFolder = "Files");
 
 		CategoryRepository Categories;
 		ProductRepository Products;
