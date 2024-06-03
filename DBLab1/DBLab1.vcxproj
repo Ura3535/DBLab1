@@ -137,8 +137,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="App.h" />
-    <ClInclude Include="Product.h" />
-    <ClInclude Include="Category.h" />
     <ClInclude Include="Repository.h" />
     <ClInclude Include="Model.h" />
   </ItemGroup>

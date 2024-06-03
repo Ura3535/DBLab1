@@ -38,12 +38,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Product.h">
-      <Filter>Models</Filter>
-    </ClInclude>
-    <ClInclude Include="Category.h">
-      <Filter>Models</Filter>
-    </ClInclude>
     <ClInclude Include="Model.h">
       <Filter>Models</Filter>
     </ClInclude>
